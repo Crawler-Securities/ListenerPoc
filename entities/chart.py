@@ -59,6 +59,8 @@ class ChartInstance:
                                              low=df['Low'],
                                              close=df['Close'],
                                              name='Candlestick')])
+        self._mark_timerange(fig)
+        self._update_layout(fig)
         return fig
 
     # region private methods
@@ -71,6 +73,7 @@ class ChartInstance:
         """
         The default chart provider is the one that is used by the ChartInstance
         to get the chart data. it uses the yfinance library to get the data.
+        
         """
         import yfinance as yf
         return yf.Ticker(ticker) \
@@ -122,4 +125,17 @@ class ChartInstance:
 
         return extended_start, extended_end
 
+    def _mark_timerange(self, fig: go.Figure) -> None:
+        """
+        Mark the timerange on the figure.
+        """
+        # add two vertical lines to mark the start and end of the self._time_range
+        fig.add_vline(x=self._time_range[0], line_width=1, line_dash="dash", line_color="green")
+        fig.add_vline(x=self._time_range[1], line_width=1, line_dash="dash", line_color="green")
+    def _update_layout(self, fig: go.Figure) -> None:
+        """
+        Update the layout of the figure.
+        """
+        # get rid of the time slider
+        fig.update_layout(xaxis_rangeslider_visible=False)
     # endregion
