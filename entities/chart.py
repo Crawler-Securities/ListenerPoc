@@ -114,12 +114,13 @@ class ChartInstance:
         """
         Mark the timerange on the figure.
         """
-        # offset the time range by 1/2 of the candle interval to avoid 
+        # offset the time range by 1/2 of the candle interval to avoid
         # visual overlap with the candlesticks
-        offset_td = ChartInstance.get_interval_as_timedelta(self._candle_interval) / 2
+        offset_td = ChartInstance.get_interval_as_timedelta(
+            self._candle_interval) / 2
         # add two vertical lines to mark the start and end of the self._time_range
         fig.add_vline(
-            x=self._time_range[0] -offset_td, line_width=1, line_dash="dash", line_color="green")
+            x=self._time_range[0] - offset_td, line_width=1, line_dash="dash", line_color="green")
         fig.add_vline(
             x=self._time_range[1] + offset_td, line_width=1, line_dash="dash", line_color="green")
 
