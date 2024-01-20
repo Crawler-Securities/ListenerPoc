@@ -36,7 +36,8 @@ class ChartInstance:
                  time_range: tuple[datetime, datetime],
                  candle_period: str = '1d',
                  showtime: tuple[datetime, datetime] or None = None,
-                 chart_provider: Callable[[str, datetime, datetime, str], pd.DataFrame] or None = None,
+                 chart_provider: Callable[[
+                     str, datetime, datetime, str], pd.DataFrame] or None = None,
                  ) -> None:
         # none optional arguments
         self.ticker = ticker
@@ -73,7 +74,7 @@ class ChartInstance:
         """
         The default chart provider is the one that is used by the ChartInstance
         to get the chart data. it uses the yfinance library to get the data.
-        
+
         """
         import yfinance as yf
         return yf.Ticker(ticker) \
@@ -102,23 +103,7 @@ class ChartInstance:
 
         start_time, end_time = time_range
 
-        # Parse the candle period
-        match = re.match(r"(\d+)([dhm])", self._candle_interval)
-        if not match:
-            raise ValueError("Invalid candle period format")
-
-        quantity, unit = int(match.group(1)), match.group(2)
-
-        # Calculate the timedelta for one period
-        if unit == 'd':
-            delta = timedelta(days=quantity)
-        elif unit == 'h':
-            delta = timedelta(hours=quantity)
-        elif unit == 'm':
-            delta = timedelta(minutes=quantity)
-        else:
-            raise ValueError("Unsupported time unit")
-
+        delta = ChartInstance.get_interval_as_timedelta(self._candle_interval)
         # Extend the time range
         extended_start = start_time - self.DEFAULT_SHOWTIME_DEVIATION * delta
         extended_end = end_time + self.DEFAULT_SHOWTIME_DEVIATION * delta
@@ -129,13 +114,45 @@ class ChartInstance:
         """
         Mark the timerange on the figure.
         """
+        # offset the time range by 1/2 of the candle interval to avoid 
+        # visual overlap with the candlesticks
+        offset_td = ChartInstance.get_interval_as_timedelta(self._candle_interval) / 2
         # add two vertical lines to mark the start and end of the self._time_range
-        fig.add_vline(x=self._time_range[0], line_width=1, line_dash="dash", line_color="green")
-        fig.add_vline(x=self._time_range[1], line_width=1, line_dash="dash", line_color="green")
+        fig.add_vline(
+            x=self._time_range[0] -offset_td, line_width=1, line_dash="dash", line_color="green")
+        fig.add_vline(
+            x=self._time_range[1] + offset_td, line_width=1, line_dash="dash", line_color="green")
+
     def _update_layout(self, fig: go.Figure) -> None:
         """
         Update the layout of the figure.
         """
         # get rid of the time slider
         fig.update_layout(xaxis_rangeslider_visible=False)
+    # endregion
+
+    # region static methods
+
+    @staticmethod
+    def get_interval_as_timedelta(interval: str) -> timedelta:
+        """
+        Get the interval as a timedelta.
+        """
+        match = re.match(r"(\d+)([dhm])", interval)
+        if not match:
+            raise ValueError("Invalid candle period format")
+
+        quantity, unit = int(match.group(1)), match.group(2)
+
+        if unit == 'd':
+            delta = timedelta(days=quantity)
+        elif unit == 'h':
+            delta = timedelta(hours=quantity)
+        elif unit == 'm':
+            delta = timedelta(minutes=quantity)
+        else:
+            raise ValueError("Unsupported time unit")
+
+        return delta
+
     # endregion
