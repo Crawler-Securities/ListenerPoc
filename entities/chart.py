@@ -36,7 +36,7 @@ class ChartInstance:
                  time_range: tuple[datetime, datetime],
                  candle_period: str = '1d',
                  showtime: tuple[datetime, datetime] or None = None,
-                 chart_provider: callable or None = None,
+                 chart_provider: Callable[[str, datetime, datetime, str], pd.DataFrame] or None = None,
                  ) -> None:
         # none optional arguments
         self.ticker = ticker
